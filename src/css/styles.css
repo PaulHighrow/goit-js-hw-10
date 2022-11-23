@@ -20,14 +20,23 @@ body {
 }
 
 .country-list {
-  margin: 0;
-  padding-left: 10px;
   list-style: none;
 }
 
+.country-list,
+.country-info {
+  margin: 0;
+  padding-left: 10px;
+}
+
+.country-item,
 .country {
   display: flex;
   gap: 20px;
+}
+
+.country {
+  font-size: 25px;
 }
 
 .flag {

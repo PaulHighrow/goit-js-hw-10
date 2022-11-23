@@ -3,13 +3,15 @@ import debounce from 'lodash.debounce';
 
 const DEBOUNCE_DELAY = 300;
 
-let query = '';
 const countryInputEl = document.querySelector('#search-box');
 const countryListEl = document.querySelector('.country-list');
 const countryInfoEl = document.querySelector('.country-info');
 
-function fetchCountries(query) {
-  return fetch(query).then(resp => {
+const BASE_URL = 'https://restcountries.com/v3.1/name/';
+const KEY_API = 'fields=name,capital,population,languages,flags';
+
+function fetchCountries(countryName) {
+  return fetch(`${BASE_URL}${countryName}?${KEY_API}`).then(resp => {
     if (!resp.ok) {
       throw new Error(resp.status);
     }
@@ -19,9 +21,13 @@ function fetchCountries(query) {
 
 function renderCountries(countries) {
   if (countries.length === 1) {
+    countryListEl.innerHTML = '';
+
     const infoMarkup = countries
       .map(country => {
-        return `
+        return `<p class="country"><img class="flag" src="${
+          country.flags.svg
+        }" alt="${country.name.official} flag"><b>${country.name.official}</b></p>
         <p class="capital"><b>Capital:</b> ${country.capital}</p>
         <p class="population"><b>Population:</b> ${country.population}</p>
         <p class="language"><b>Languages:</b> ${Object.values(
@@ -29,20 +35,21 @@ function renderCountries(countries) {
         ).join(', ')}</p>`;
       })
       .join('');
+
     countryInfoEl.innerHTML = infoMarkup;
   }
 
   if (countries.length > 1) {
     countryInfoEl.innerHTML = '';
+
+    const listMarkup = countries
+      .map(country => {
+        return `<li class="country-item"><img class="flag" src="${country.flags.svg}"></img><p class="name"><b>${country.name.official}</b></p></li>`;
+      })
+      .join('');
+    
+      countryListEl.innerHTML = listMarkup;
   }
-
-  const listMarkup = countries
-    .map(country => {
-      return `<li class="country"><img class="flag" src="${country.flags.svg}"></img><p class="name"><b>${country.name.official}</b></p></li>`;
-    })
-    .join('');
-
-  countryListEl.innerHTML = listMarkup;
 }
 
 countryInputEl.addEventListener(
@@ -50,15 +57,20 @@ countryInputEl.addEventListener(
   debounce(inputHandler, DEBOUNCE_DELAY)
 );
 
+function clearMarkups() {
+  countryListEl.innerHTML = '';
+  countryInfoEl.innerHTML = '';
+}
+
 function inputHandler(e) {
-  if (!e.target.value) {
-    countryListEl.innerHTML = '';
-    countryInfoEl.innerHTML = '';
+  let countryName = e.target.value.trim();
+
+  if (!countryName) {
+    clearMarkups();
     return;
   }
 
-  query = `https://restcountries.com/v3.1/name/${countryInputEl.value.trim()}?fields=name,capital,population,languages,flags`;
-  fetchCountries(query)
+  fetchCountries(countryName)
     .then(countries => {
       if (countries.length > 10) {
         Notify.info(
@@ -68,7 +80,8 @@ function inputHandler(e) {
       }
       renderCountries(countries);
     })
-    .catch(err =>
-      Notify.failure('❌ Oops, there is no country with that name')
-    );
+    .catch(err => {
+      clearMarkups();
+      Notify.failure('❌ Oops, there is no country with that name');
+    });
 }
