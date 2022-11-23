@@ -27,7 +27,9 @@ function renderCountries(countries) {
       .map(country => {
         return `<p class="country"><img class="flag" src="${
           country.flags.svg
-        }" alt="${country.name.official} flag"><b>${country.name.official}</b></p>
+        }" alt="${country.name.official} flag"><b>${
+          country.name.official
+        }</b></p>
         <p class="capital"><b>Capital:</b> ${country.capital}</p>
         <p class="population"><b>Population:</b> ${country.population}</p>
         <p class="language"><b>Languages:</b> ${Object.values(
@@ -47,8 +49,8 @@ function renderCountries(countries) {
         return `<li class="country-item"><img class="flag" src="${country.flags.svg}"></img><p class="name"><b>${country.name.official}</b></p></li>`;
       })
       .join('');
-    
-      countryListEl.innerHTML = listMarkup;
+
+    countryListEl.innerHTML = listMarkup;
   }
 }
 
@@ -73,6 +75,7 @@ function inputHandler(e) {
   fetchCountries(countryName)
     .then(countries => {
       if (countries.length > 10) {
+        clearMarkups();
         Notify.info(
           '❔ Too many matches found. Please enter a more specific name.'
         );
